@@ -21,3 +21,14 @@ If you want to set up a random accounts and their pin code. You can use the **cr
 ### Note:
 
 I have created random accounts using a simple for-loop, where the last 4 digits of the account is the pin code for that account. Each account we create, becomes a row in SQLite table as well as a new table with 'account_{account number} is created that holds all the account transaction with time history.
+
+Also if you pass 'log=True' to ATMController (or Account) class object, it will print out some very helpful information.
+
+
+### Result: 
+
+![Alt text](/images/result-A.PNG?raw=true "ATM Controller - Python Test Result")
+
+##### --------------------------------------------------------------------------------------------------------------------
+
+![Alt text](/images/result-B.PNG?raw=true "Account - Python Test Result")
