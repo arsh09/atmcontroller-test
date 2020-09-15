@@ -1,56 +1,92 @@
+""" 
+ATMController is our controller:
+It tries to hide the functionality of the
+Account class by only exposing the main functions
+"""
 
-import time 
+from accounts import Account
 
-class ATMController: 
+class ATMController:
 
-    def __init__(self):
+    # It assumes that ATMController Constructor 
+    # works as a card reader that reads the card number 
+    # and user inputted pin
+    def __init__(self, account, pin, log=True):
 
-        # A variable to hold the current user input
-        self._users = [
-            { "key" : 0, "name" : "Arshad" , "pin" : 1234 },
-            { "key" : 1, "name" : "John" , "pin" : 3213 },
-            { "key" : 2, "name" : "Shereen" , "pin" : 4322 },
-            { "key" : 3, "name" : "David" , "pin" : 5433 },
-            { "key" : 4, "name" : "Peter" , "pin" : 1234 },
-        ]
+        self.account = account
+        self.pin = pin
+        self._user_account = Account(log=log)
 
-        self._user = {},
+    # This method validates the read-pin and account
+    # number. It may be that the card number is not valid as well. 
+    def insert(self):
+        return self._user_account.validate_pin(self.account, self.pin)
 
-    def _print_message(self, msg, level):
-        print "[%s] - %s" % (level, msg)
+    # This function is called when the card is retracted from the machine
+    def retract(self):
+        self._user_account.clear_user()
 
-    def validate_pin(self): 
-        self._print_message("Please enter your pin", "INFO")
-        N = 4
-        for i in range(1,N):
-            pin = int(raw_input())
-            if pin == self._user["pin"]:
-                self._print_message("Correct pin is entered", "LOG")
-                return True
-            else : 
-                if N - i - 1 > 0:
-                    self._print_message("Wrong pin. %d tries left" % (N - i - 1), "ERROR")
-                else : 
-                    break 
+    # When the show balance button on the user interface is clicked
+    # It returns the amount of balance in the card/account
+    def balance(self):
+        return self._user_account.check_balance()
+    
+    # When the show history button on the user interface is clicked
+    # It returns the complete transaction history. 
+    # The user interface front-end dev can choose to show full or 
+    # part of the history
+    def history(self):
+        return self._user_account.check_history()   
 
-        return False
+    # When user wants to deposit the card/account
+    # Before depositing the cash, a cash bin might check 
+    # if the inserted paper is actually a valid currency or not.
+    # After that, this method should be called
+    def deposit(self, amount):
+        return self._user_account.deposit_cash(amount)
+    
+    # When user wants withdraw an amount. 
+    # The front end dev does not have to worry about
+    # checking if the balance in the account is greater than
+    # zero or not as it is internally handled.
+    # There is no withdrawal if the balance is less than zero
+    def withdraw(self, amount):
+        return self._user_account.withdraw_cash(amount)
+    
 
-    def choose_user(self) : 
-        self._user = self._users[0]
-
-    def select_account(self): 
-        
-
-    def control_loop(self): 
-        
-        self.choose_user()
-        self.validate_pin()
-
-
+# A function that shows the functionality of the
+# overall system
 def main():
 
-    controller = ATMController()    
-    controller._control_loop()
+    account = 100234
+    pin = 1235
+    card = ATMController(account, pin, log=False)
+    
+    isPinCorrect = card.insert()
+    if isPinCorrect:
+
+        balance = card.balance()
+        print "[USER]Your current balance is: {}".format(balance)
+        
+        depositAmount = 100
+        isDeposited = card.deposit(depositAmount)
+        if isDeposited: print "[USER]You deposited an amount: {}".format(depositAmount)
+
+        withdrawAmount = 5000
+        isWithdraw = card.withdraw(withdrawAmount)
+        if isWithdraw: print "[USER]You withdrew an amount: {}".format(withdrawAmount)
+
+        balance = card.balance()
+        print "[USER]Your current balance is: {}".format(balance)
+
+        history = card.history()
+        if type(history) == list: 
+            for transaction in history:
+                print "[USER]Time: {}\tAmount: {}\tAction: {}".format(transaction[0],transaction[1],transaction[2])
+
+        card.retract()
+
 
 if __name__ == '__main__':
+
     main()
